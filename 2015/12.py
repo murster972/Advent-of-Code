@@ -61,7 +61,14 @@ def remove_reds(txt):
 
     def not the most efficent as we're searching over the
     string multiple times, but at this size that doesn't
-    feel like an issue.
+    feel like an issue. If we wanted to optmize we could
+    keep track of the objects as we're iterating over
+    and once we encounter a red-value ietrate forward
+    to find a closing-bracket then remove that entire
+    value. OHHHH or better yet, alongside this keep track
+    of the numbers for each object and then jure take away
+    the total of all red objects at the end. That way we'd
+    only iterate the txt once.
 
     We can't just search for each object as we'd need to take
     into account objects in lists, objects in objects etc. etc.
