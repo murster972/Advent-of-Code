@@ -46,7 +46,8 @@ class TreeGenerator:
     self._generate_tree_objects(self.all_values, None)
   
   def generate_dicts(self):
-    self._generate_tree_dicts(self.all_values, self.dict_trees)
+    # self._generate_tree_dicts(self.all_values, self.dict_trees)
+    self._generate_tree_dicts(self.all_values)
 
   # @profile
   def _generate_tree_objects(self, values, node):
@@ -93,18 +94,41 @@ class TreeGenerator:
       child_values = values[0:i] + values[(i + 1):]
       self._generate_tree_objects(child_values, new_node)
 
-  @profile
-  def _generate_tree_dicts(self, values, node):  
-    for i in range(len(values)):      
-      # value = values[i]
+  # @profile
+  # def _generate_tree_dicts(self, values, node):
+  #   for i in range(len(values)):      
+  #     # value = values[i]
+  #     # node[value] = {}
+
+  #     # self.count += 1
+  #     # print(f"{self.count}/{self.exp}")
+
+  #     child_values = values[0:i] + values[(i + 1):]
+  #     # self._generate_tree_dicts(child_values, node[value])
+  #     self._generate_tree_dicts(child_values, None)
+
+  # @profile
+  def _generate_tree_dicts(self, values, prefix=[], prefix_sum=0):
+    for i in range(len(values)):
+      value = values[i]
       # node[value] = {}
+
+      if prefix_sum == 0:
+        print(value)
 
       # self.count += 1
       # print(f"{self.count}/{self.exp}")
 
+      total = prefix_sum + value
+
+      if total > 150:
+        continue
+
       child_values = values[0:i] + values[(i + 1):]
+      prefix.append(value)
       # self._generate_tree_dicts(child_values, node[value])
-      self._generate_tree_dicts(child_values, None)
+      self._generate_tree_dicts(child_values, prefix, total)
+      prefix.pop()
 
   # def test(self):
   #   for i in range(len(self.all_values)):
@@ -200,13 +224,9 @@ def test():
     how long does a single value tree take to generate? we need
     to be able to go upto 20 for the challenge input.
 
-    working out the tree for a single item when theres 12 overall
+    working out the tree for a single item when theres  overall
     takes 37s, which is an increase from 3s at 11 overall items
     so def not going to work for 20 overall items.
-
-    ahh fuck, okay, so this approach isn't going to work unless
-    we can somehow split the list up - which we don't think we
-    can do right now without missing permuations.
 
     could we parallelize creating the child values? so:
       - have a loop that for each value creates a new proc that creates the child values
@@ -216,6 +236,53 @@ def test():
     it takes ~24% of the time. So a decent chunk I don't think
     enough to make the approach workable.
 
+    ahh fuck, okay, so this approach isn't going to work unless
+    we can somehow split the list up - which we don't think we
+    can do right now without missing permuations.
+
+    which makes sense though since it does grow expontientlly, like
+    if we have 20 we have:
+      - the firsty layer has 20 nodes all with 19 children
+      - then all of those children have 18 children
+      - etc. etc.
+    
+    so it just doesn't scale.
+
+    we need another approach where we don't need to find ALL permutations.
+
+    what happens if we keep track of the prefix and then exit if it's
+    greater than our target value? i.e. don't go down any more
+    sub-trees. faster but still far to slow.
+
+    technically we don't care about permuations we care about combinations
+    so we could out the bat eliminate a large selection of the smaller
+    values.
+
+    so we need to:
+      1. find a way to reduce the space we're searching
+        - which we can't really do
+        - since in order to know all possible combos
+          we need to check the entire list
+        - kind of like, in order to search a list we
+          need to check all items
+      2. find a more efficent way to search the space
+        - this feels like the best bet
+        - a wee spoiler is that we know this is the same
+          as the change problem
+        - seen that was solved using dynamic-programming
+        - which we thought was just divide-and-conqueer (which we can't do)
+        - but apprently not
+        - so lets do some research on that to see if it sparks any ideas
+
+    -     
+    
+    - do we want to read the dynamic-programming section in algo book on Kindle???
+      - we could do this, and would be the smart thing todo
+      - but it feels like cheating
+      - I want to figure this out ourselves
+      - we've just came to the conslusion we need a new approach
+      - lets give that some time to marinate
+
     TODO: add a prefix instead of a previous node so that we can
           track the previous values.
   '''
@@ -224,10 +291,14 @@ def test():
   # NOTE: from test
   # test_objects(values)
 
+  values = [43, 3, 4, 10, 21, 44, 4, 6, 47, 41, 34, 17, 17, 44, 36, 31, 46, 9, 27, 38]
+  values = sorted(values)
+  test_dict(values)
 
-  for i in range(10, 11):
-    values = [j for j in range(1, i + 1)]
-    test_dict(values)
+
+  # for i in range(10, 11):
+  #   values = [j for j in range(1, i + 1)]
+  #   test_dict(values)
 
 
 if __name__ == "__main__":
